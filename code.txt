@@ -1,0 +1,23 @@
+pm.request.addQueryParams({ key: 'api-version', value: pm.environment.get("api-version") });
+
+let resource = (typeof pm.collectionVariables.get("resource") !== "undefined" ? pm.collectionVariables.get("resource") : "https://management.azure.com/");
+let tenantId = pm.collectionVariables.get("tenantId");
+console.log('tenantId =' + tenantId);
+
+pm.sendRequest({
+    url: "https://login.microsoftonline.com/" + tenantId + "/oauth2/token",
+    method: 'POST',
+    header: 'Content-Type: application/x-www-form-urlencoded',
+    body: {
+        mode: 'urlencoded',
+        urlencoded: [
+            {key: "grant_type", value: "client_credentials", disable: false},
+            {key: "client_id", value: pm.collectionVariables.get("clientId"), disable: false},
+            {key: "client_secret", value: pm.collectionVariables.get("clientSecret"), disable: false},
+            {key: "resource", value: resource, disable: false}
+        ]
+    }
+
+}, function(err, res) {
+    pm.collectionVariables.set("bearerToken", res.json().access_token);
+});
